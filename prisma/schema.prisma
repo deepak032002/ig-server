@@ -1,0 +1,113 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String      @id @default(uuid())
+  firstName  String
+  lastName   String
+  profilePic String      @default("")
+  email      String      @unique
+  phone      String
+  password   String
+  role       Role        @default(AUTHOR)
+  isVerified Boolean     @default(false)
+  isDeleted  Boolean     @default(false)
+  address    Address?    @relation(fields: [addressId], references: [id])
+  addressId  String?     @unique
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  Editorial  Editorial[]
+  Logs       Logs[]
+
+  @@index([email, role])
+}
+
+model Address {
+  id        String   @id @default(uuid())
+  street    String
+  city      String
+  state     String
+  country   String
+  pincode   String
+  User      User?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Editorial {
+  id              String    @id @default(uuid())
+  title           String
+  category        Category? @relation(fields: [categoryId], references: [id])
+  categoryId      String?
+  tags            Tag[]
+  metaDescription String    @default("")
+  metaTitle       String    @default("")
+  content         String
+  thumbnail       String?   @default("")
+  user            User?     @relation(fields: [userId], references: [id])
+  userId          String?
+  isPublished     Boolean   @default(false)
+  viewersCount    Int?      @default(0)
+  isDeleted       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  source          Source    @relation(fields: [sourceId], references: [id])
+  sourceId        String    @unique
+
+  @@index([title])
+}
+
+model Source {
+  id             String     @id @default(uuid())
+  title          String
+  link           String     @unique
+  originalSource String?    @unique
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  editorialId    Editorial?
+
+  @@index([link, originalSource])
+}
+
+model Category {
+  id        String      @id @default(uuid())
+  name      String      @unique
+  Editorial Editorial[]
+  isDeleted Boolean     @default(false)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model Tag {
+  id        String      @id @default(uuid())
+  name      String      @unique
+  Editorial Editorial[]
+  isDeleted Boolean     @default(false)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model Logs {
+  id        String   @id @default(uuid())
+  message   String
+  level     String
+  service   String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+}
+
+enum Role {
+  AUTHOR
+  ADMIN
+}
