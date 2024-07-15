@@ -89,7 +89,7 @@ export class UserService {
       where: { email: verifyEmailDto.email },
     });
 
-    if (user.isVerified) {
+    if (user?.isVerified) {
       throw new BadRequestException('Email already verified');
     }
 

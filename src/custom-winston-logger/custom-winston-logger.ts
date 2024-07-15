@@ -41,7 +41,7 @@ export class CustomWinstonLogger {
       format: winston.format.json(),
       defaultMeta: { service: ' ig-service' },
       transports: [
-        // new winston.transports.Console(),
+        new winston.transports.Console(),
         new SocketTransport({}, this.socketGateway, this.prisma),
       ],
     });

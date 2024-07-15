@@ -1,15 +1,17 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import {
+  CreateArticleDto,
   CreateScrapeDto,
   DeleteScrapeDto,
   ScrapeOption,
 } from './dto/index.dto';
 import { PrismaService } from 'src/prisma.service';
-import { ScrapeFunctions } from 'src/scrape/scrape.functions';
+import { ScrapeFunctions } from 'src/articles/scrape.functions';
 import { responseResult } from 'src/utils/response-result';
+import { RequestWithUser } from 'src/user/interface';
 
 @Injectable()
-export class ScrapeService {
+export class ArticlesService {
   constructor(
     private prisma: PrismaService,
     private scrapeFunctions: ScrapeFunctions,
@@ -31,24 +33,12 @@ export class ScrapeService {
           }
           return {
             success: true,
-            data: latestHinduEditorialList,
+            message: 'Fetched hindu editorial successfully.',
           };
         }
 
-        case ScrapeOption.DRISHTI_IAS: {
-          const list = await this.scrapeFunctions.getDrishtiIasEditorialsList();
-
-          if (list.length === 0) {
-            return {
-              success: true,
-              message: 'Already fetched Drishti IAS editorial.',
-            };
-          }
-          return {
-            success: true,
-            message: 'Successfully fetched Drishti IAS editorial.',
-            data: list,
-          };
+        case ScrapeOption.INDIAN_EXPRESS: {
+          return 'indian express';
         }
 
         default: {
@@ -61,24 +51,38 @@ export class ScrapeService {
   }
 
   async findAll(page: number = 1, limit: number = 10, search: string = '') {
-    // find editorial with pagination
-    const editorial = await this.prisma.editorial.findMany({
+    // find articles with pagination
+    const articles = await this.prisma.article.findMany({
       take: limit,
       select: {
         id: true,
         title: true,
         content: true,
-        source: {
-          select: {
-            id: true,
-            title: true,
-            link: true,
-          },
-        },
+        source: true,
         createdAt: true,
         updatedAt: true,
         thumbnail: true,
         viewersCount: true,
+        category: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        tags: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            profilePic: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -92,7 +96,7 @@ export class ScrapeService {
       },
     });
 
-    const total = await this.prisma.editorial.count({
+    const total = await this.prisma.article.count({
       where: {
         OR: [
           { title: { contains: search, mode: 'insensitive' } },
@@ -101,36 +105,64 @@ export class ScrapeService {
       },
     });
 
-    if (editorial.length === 0) {
-      return responseResult(
-        { editorial, total },
-        true,
-        'Editorial not available',
-      );
+    if (articles.length === 0) {
+      return responseResult({ articles, total }, true, 'Article not available');
     }
 
     return responseResult(
-      { editorial, total },
+      { articles, total },
       true,
-      'Editorial found successfully',
+      'Article found successfully',
     );
+  }
+
+  async addNewArticle(body: CreateArticleDto, req: RequestWithUser) {
+    try {
+      const isExistingTitle = await this.prisma.article.findFirst({
+        where: { title: body.title },
+      });
+
+      if (isExistingTitle) {
+        throw new BadRequestException('Title should be unique!');
+      }
+
+      await this.prisma.article.create({
+        data: {
+          title: body.title,
+          content: body.content,
+          metaDescription: body.metaDescription,
+          metaTitle: body.metaTitle,
+          thumbnail: body.thumbnail,
+          category: {
+            connect: { id: body.category },
+          },
+          tags: {
+            connect: body.tag.map((tag) => ({ id: tag })),
+          },
+          isPublished: false,
+          user: {
+            connect: {
+              id: req.user.sub,
+            },
+          },
+        },
+      });
+
+      return responseResult(null, true, 'Article added successfully');
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
   async findOne(id: string) {
     try {
-      const editorial = await this.prisma.editorial.findUnique({
+      const editorial = await this.prisma.article.findUnique({
         where: { id },
         select: {
           id: true,
           title: true,
           content: true,
-          source: {
-            select: {
-              id: true,
-              title: true,
-              link: true,
-            },
-          },
+          source: true,
           metaDescription: true,
           metaTitle: true,
           createdAt: true,
@@ -154,7 +186,7 @@ export class ScrapeService {
   async remove(data: DeleteScrapeDto) {
     const { id } = data;
     try {
-      await this.prisma.editorial.deleteMany({
+      await this.prisma.article.deleteMany({
         where: { id: { in: id } },
       });
       return responseResult(null, true, 'Editorial deleted successfully.');

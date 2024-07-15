@@ -13,6 +13,8 @@ import { UpdateTagDto } from './dto/update-tag.dto';
 import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Tags')
+// @ApiBearerAuth()
+// @UseGuards(AuthGuard)
 @Controller('tags')
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}

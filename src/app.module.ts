@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { CacheModule } from '@nestjs/cache-manager';
-import { ScrapeModule } from './scrape/scrape.module';
+import { ScrapeModule } from './articles/articles.module';
 import { CustomWinstonLogger } from './custom-winston-logger/custom-winston-logger';
 import { SocketGateway } from './socket/socket.gateway';
 import { JwtService } from '@nestjs/jwt';

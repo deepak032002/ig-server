@@ -6,7 +6,7 @@ import { responseResult } from './utils/response-result';
 export class AppService {
   constructor(private readonly config: ConfigService) {}
   getHello(): string {
-    return `Hello`;
+    return `Hello Everyone!`;
   }
 
   private generatePresignedUrl() {
@@ -26,7 +26,6 @@ export class AppService {
   async uploadImage() {
     try {
       const url = this.generatePresignedUrl();
-      console.log(url);
 
       return responseResult(
         { url },

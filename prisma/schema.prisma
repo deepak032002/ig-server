@@ -11,24 +11,25 @@ datasource db {
 }
 
 model User {
-  id         String      @id @default(uuid())
+  id         String   @id @default(uuid())
   firstName  String
   lastName   String
-  profilePic String      @default("")
-  email      String      @unique
+  profilePic String   @default("")
+  email      String   @unique
   phone      String
   password   String
-  role       Role        @default(AUTHOR)
-  isVerified Boolean     @default(false)
-  isDeleted  Boolean     @default(false)
-  address    Address?    @relation(fields: [addressId], references: [id])
-  addressId  String?     @unique
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  Editorial  Editorial[]
-  Logs       Logs[]
+  role       Role     @default(AUTHOR)
+  isVerified Boolean  @default(false)
+  isDeleted  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  @@index([email, role])
+  address Address?
+  article Article[]
+  logs    Logs[]
+
+  @@index([email, firstName])
+  @@map("users")
 }
 
 model Address {
@@ -38,62 +39,75 @@ model Address {
   state     String
   country   String
   pincode   String
-  User      User?
+  userId    String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("addresses")
 }
 
-model Editorial {
-  id              String    @id @default(uuid())
-  title           String
-  category        Category? @relation(fields: [categoryId], references: [id])
+model Article {
+  id              String   @id @default(uuid())
+  title           String   @unique
   categoryId      String?
-  tags            Tag[]
-  metaDescription String    @default("")
-  metaTitle       String    @default("")
+  metaDescription String   @default("")
+  metaTitle       String   @default("")
   content         String
-  thumbnail       String?   @default("")
-  user            User?     @relation(fields: [userId], references: [id])
+  thumbnail       String?  @default("")
   userId          String?
-  isPublished     Boolean   @default(false)
-  viewersCount    Int?      @default(0)
-  isDeleted       Boolean   @default(false)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  source          Source    @relation(fields: [sourceId], references: [id])
-  sourceId        String    @unique
+  isPublished     Boolean  @default(false)
+  viewersCount    Int?     @default(0)
+  isDeleted       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tags     Tag[]
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  user     User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  source   Source?
 
   @@index([title])
+  @@map("articles")
 }
 
 model Source {
-  id             String     @id @default(uuid())
-  title          String
-  link           String     @unique
-  originalSource String?    @unique
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-  editorialId    Editorial?
+  id        String   @id @default(uuid())
+  title     String
+  link      String
+  articleId String   @unique
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@index([link, originalSource])
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@map("sources")
 }
 
 model Category {
-  id        String      @id @default(uuid())
-  name      String      @unique
-  Editorial Editorial[]
-  isDeleted Boolean     @default(false)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id        String   @id @default(uuid())
+  name      String   @unique
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  article Article[]
+
+  @@map("categories")
 }
 
 model Tag {
-  id        String      @id @default(uuid())
-  name      String      @unique
-  Editorial Editorial[]
-  isDeleted Boolean     @default(false)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id        String   @id @default(uuid())
+  name      String   @unique
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  article Article[]
+
+  @@map("tags")
 }
 
 model Logs {
@@ -101,10 +115,13 @@ model Logs {
   message   String
   level     String
   service   String
-  user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   userId    String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("logs")
 }
 
 enum Role {
