@@ -1,9 +1,9 @@
-import { Request } from 'express';
-import { Role } from 'src/types';
+import { Request } from 'express'
+import { Role } from 'src/types'
 
 export interface RequestWithUser extends Request {
   user: {
-    sub: string;
-    role: Role;
-  };
+    sub: string
+    role: Role
+  }
 }

@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsEnum, IsNotEmpty, MinLength } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger'
+import { IsArray, IsEnum, IsNotEmpty, MinLength } from 'class-validator'
 
 export enum ScrapeOption {
   THE_HINDU,
@@ -10,45 +10,45 @@ export class CreateScrapeDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsEnum(ScrapeOption, { message: 'Invalid option' })
-  option: ScrapeOption;
+  option: ScrapeOption
 }
 
 export class CreateArticleDto {
   @ApiProperty()
   @IsNotEmpty()
   @MinLength(10)
-  title: string;
+  title: string
 
   @ApiProperty()
   @IsNotEmpty()
   @MinLength(60)
-  description: string;
+  description: string
 
   @ApiProperty()
   @IsNotEmpty()
-  content: string;
+  content: string
 
   @ApiProperty()
-  thumbnail: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  category: string;
+  thumbnail: string
 
   @ApiProperty()
   @IsNotEmpty()
-  tag: string[];
+  category: string
 
   @ApiProperty()
-  metaTitle: string;
+  @IsNotEmpty()
+  tag: string[]
 
   @ApiProperty()
-  metaDescription: string;
+  metaTitle: string
+
+  @ApiProperty()
+  metaDescription: string
 }
 
 export class DeleteScrapeDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsArray({ message: 'id should be an array' })
-  id: string[];
+  id: string[]
 }

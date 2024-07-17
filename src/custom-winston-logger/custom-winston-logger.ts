@@ -1,9 +1,9 @@
-import { Inject, Injectable, Scope } from '@nestjs/common';
-import * as winston from 'winston';
-import Transport from 'winston-transport';
-import { SocketGateway } from 'src/socket/socket.gateway';
-import { PrismaService } from 'src/prisma.service';
-import { REQUEST } from '@nestjs/core';
+import { Inject, Injectable, Scope } from '@nestjs/common'
+import * as winston from 'winston'
+import Transport from 'winston-transport'
+import { SocketGateway } from 'src/socket/socket.gateway'
+import { PrismaService } from 'src/prisma.service'
+import { REQUEST } from '@nestjs/core'
 
 class SocketTransport extends Transport {
   constructor(
@@ -11,7 +11,7 @@ class SocketTransport extends Transport {
     private socketGateway: SocketGateway,
     private prisma: PrismaService,
   ) {
-    super(opts);
+    super(opts)
   }
 
   log(info: any) {
@@ -22,8 +22,8 @@ class SocketTransport extends Transport {
         service: info.service,
         user: info.user,
       },
-    });
-    this.socketGateway.emitMessage('log', { ...info, date: new Date() });
+    })
+    this.socketGateway.emitMessage('log', { ...info, date: new Date() })
   }
 }
 
@@ -40,10 +40,7 @@ export class CustomWinstonLogger {
       level: 'info',
       format: winston.format.json(),
       defaultMeta: { service: ' ig-service' },
-      transports: [
-        new winston.transports.Console(),
-        new SocketTransport({}, this.socketGateway, this.prisma),
-      ],
-    });
+      transports: [new winston.transports.Console(), new SocketTransport({}, this.socketGateway, this.prisma)],
+    })
   }
 }

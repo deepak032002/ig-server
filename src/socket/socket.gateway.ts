@@ -1,5 +1,5 @@
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config'
+import { JwtService } from '@nestjs/jwt'
 import {
   MessageBody,
   OnGatewayConnection,
@@ -7,16 +7,16 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
-} from '@nestjs/websockets';
-import { Socket } from 'socket.io';
-import { PrismaService } from 'src/prisma.service';
+} from '@nestjs/websockets'
+import { Socket } from 'socket.io'
+import { PrismaService } from 'src/prisma.service'
 
 @WebSocketGateway({
   cors: '*',
 })
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
-  socket: Socket;
+  socket: Socket
 
   constructor(
     private jwtService: JwtService,
@@ -26,19 +26,19 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('message')
   handleMessage(@MessageBody() payload: any) {
-    this.socket.emit('message', payload);
+    this.socket.emit('message', payload)
   }
 
   emitMessage(event: string, message: string | Record<string, any>) {
-    this.socket.emit(event, message);
+    this.socket.emit(event, message)
   }
 
   handleConnection(client: Socket) {
-    const token = client.handshake.headers.authorization;
+    const token = client.handshake.headers.authorization
     if (!token) {
-      client.emit('error', 'Unauthorized');
-      client.disconnect();
-      return;
+      client.emit('error', 'Unauthorized')
+      client.disconnect()
+      return
     }
 
     this.jwtService
@@ -47,20 +47,20 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       })
       .then((value) => {
         if (value.role !== 'ADMIN') {
-          client.emit('error', 'Unauthorized');
-          client.disconnect();
-          return;
+          client.emit('error', 'Unauthorized')
+          client.disconnect()
+          return
         }
-        console.log(`Client connected: ${client.id}`);
+        console.log(`Client connected: ${client.id}`)
       })
       .catch((error) => {
-        console.log(error);
-        client.emit('error', 'Unauthorized');
-        client.disconnect();
-      });
+        console.log(error)
+        client.emit('error', 'Unauthorized')
+        client.disconnect()
+      })
   }
 
   handleDisconnect(client: Socket) {
-    console.log(`Client disconnected: ${client.id}`);
+    console.log(`Client disconnected: ${client.id}`)
   }
 }

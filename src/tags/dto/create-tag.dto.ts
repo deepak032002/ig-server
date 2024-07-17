@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger'
+import { IsNotEmpty, IsString } from 'class-validator'
 
 export class CreateTagDto {
   @ApiProperty({
@@ -8,5 +8,5 @@ export class CreateTagDto {
   })
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name: string
 }

@@ -1,42 +1,35 @@
-import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsString,
-  IsStrongPassword,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
-import { MatchProperties } from 'src/Decorators/pipes/matchProperties.pipe';
+import { ApiProperty } from '@nestjs/swagger'
+import { IsEmail, IsNotEmpty, IsString, IsStrongPassword, MaxLength, MinLength } from 'class-validator'
+import { MatchProperties } from 'src/Decorators/pipes/matchProperties.pipe'
 
 export class CreateUserDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  firstName: string;
+  firstName: string
 
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  lastName: string;
+  lastName: string
 
   @ApiProperty()
   @IsEmail()
-  email: string;
+  email: string
 
   @ApiProperty()
   @IsString()
-  phone: string;
+  phone: string
 
   @ApiProperty()
   @IsString()
   @MaxLength(20)
   @MinLength(8)
   @IsStrongPassword()
-  password: string;
+  password: string
 
   @ApiProperty()
   @IsString()
   @MatchProperties('password', { message: 'Passwords should be matches.' })
-  confirm_password?: string;
+  confirm_password?: string
 }

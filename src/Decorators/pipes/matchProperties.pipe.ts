@@ -1,13 +1,6 @@
-import {
-  registerDecorator,
-  ValidationOptions,
-  ValidationArguments,
-} from 'class-validator';
+import { registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator'
 
-export function MatchProperties(
-  property: string,
-  validationOptions?: ValidationOptions,
-) {
+export function MatchProperties(property: string, validationOptions?: ValidationOptions) {
   return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'matchProperties',
@@ -17,17 +10,15 @@ export function MatchProperties(
       options: validationOptions,
       validator: {
         validate(value: any, args: ValidationArguments) {
-          const obj = JSON.parse(JSON.stringify({ ...args.object }));
+          const obj = JSON.parse(JSON.stringify({ ...args.object }))
 
           if (typeof obj === 'object') {
-            return !Object.keys(obj).includes(property)
-              ? false
-              : value === obj[`${property}`];
+            return !Object.keys(obj).includes(property) ? false : value === obj[`${property}`]
           }
 
-          return false;
+          return false
         },
       },
-    });
-  };
+    })
+  }
 }

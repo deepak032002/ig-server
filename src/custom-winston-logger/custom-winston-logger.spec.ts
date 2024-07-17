@@ -1,18 +1,18 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { CustomWinstonLogger } from './custom-winston-logger';
+import { Test, TestingModule } from '@nestjs/testing'
+import { CustomWinstonLogger } from './custom-winston-logger'
 
 describe('CustomWinstonLogger', () => {
-  let provider: CustomWinstonLogger;
+  let provider: CustomWinstonLogger
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [CustomWinstonLogger],
-    }).compile();
+    }).compile()
 
-    provider = module.get<CustomWinstonLogger>(CustomWinstonLogger);
-  });
+    provider = module.get<CustomWinstonLogger>(CustomWinstonLogger)
+  })
 
   it('should be defined', () => {
-    expect(provider).toBeDefined();
-  });
-});
+    expect(provider).toBeDefined()
+  })
+})

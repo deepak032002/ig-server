@@ -1,24 +1,20 @@
-import {
-  GoogleGenerativeAI,
-  HarmCategory,
-  HarmBlockThreshold,
-} from '@google/generative-ai';
-import { ConfigService } from '@nestjs/config';
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai'
+import { ConfigService } from '@nestjs/config'
 
-const config = new ConfigService();
+const config = new ConfigService()
 
 export async function generateText(data: string, type: 'title' | 'content') {
   // For text-only input, use the gemini-pro model
 
-  const genAI = new GoogleGenerativeAI(config.get('GOOGLE_GEMINI_API_KEY'));
-  const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+  const genAI = new GoogleGenerativeAI(config.get('GOOGLE_GEMINI_API_KEY'))
+  const model = genAI.getGenerativeModel({ model: 'gemini-pro' })
 
   const generationConfig = {
     temperature: 0.9,
     topK: 1,
     topP: 1,
     maxOutputTokens: 4000,
-  };
+  }
 
   const safetySettings = [
     {
@@ -37,7 +33,7 @@ export async function generateText(data: string, type: 'title' | 'content') {
       category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
       threshold: HarmBlockThreshold.BLOCK_NONE,
     },
-  ];
+  ]
 
   // const history =
   //   type === 'title'
@@ -72,13 +68,13 @@ export async function generateText(data: string, type: 'title' | 'content') {
           {
             text: `You are a professional blog writer.Write a blog post based on the following article. Extract key points make suitable headings and explain them in a clear, concise way. it should be 2000 words. Article - ${data}`,
           },
-        ];
+        ]
 
   const chat = model.generateContent({
     generationConfig,
     safetySettings,
     contents: [{ role: 'user', parts }],
-  });
+  })
 
   // let msg: string;
 
@@ -88,7 +84,7 @@ export async function generateText(data: string, type: 'title' | 'content') {
   //   msg = `Article - ${data}`;
   // }
 
-  const result = await chat;
-  const response = result.response;
-  return response.text();
+  const result = await chat
+  const response = result.response
+  return response.text()
 }

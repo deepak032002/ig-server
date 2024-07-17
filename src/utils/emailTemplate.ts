@@ -44,4 +44,4 @@ export const htmlContent = `<!DOCTYPE html>
   </div>
 </body>
 </html>
-`;
+`
