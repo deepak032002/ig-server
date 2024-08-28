@@ -1,11 +1,28 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, HttpCode } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+  HttpCode,
+  Query,
+  ParseIntPipe,
+  BadRequestException,
+  HttpStatus,
+} from '@nestjs/common'
 import { UserService } from './user.service'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
-import { EmailVerificationDto, LoginUserDto, VerifyEmailDto } from './dto/login-user.dto'
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger'
+import { ChangePasswordDto, EmailVerificationDto, LoginUserDto, VerifyEmailDto } from './dto/login-user.dto'
 import { AuthGuard } from 'src/Decorators/guards/auth.guard'
 import { RequestWithUser } from './interface'
+import { Roles, RolesGuard } from 'src/Decorators/guards/roles.guard'
+import { Role } from 'src/types'
 
 @ApiTags('User')
 @Controller('user')
@@ -35,6 +52,12 @@ export class UserController {
     return this.userService.getEmailVerificationOtp(emailVerificationDto)
   }
 
+  @Post('/forget-password')
+  @HttpCode(200)
+  forgetPassword(@Body() changePasswordDto: ChangePasswordDto) {
+    return this.userService.changePassword(changePasswordDto)
+  }
+
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Get('/me')
@@ -42,16 +65,44 @@ export class UserController {
     return this.userService.me(req)
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(id)
-  }
-
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(+id, updateUserDto)
+  }
+
+  @ApiQuery({ name: 'search', required: false })
+  @ApiBearerAuth()
+  @Roles([Role.ADMIN])
+  @UseGuards(AuthGuard, RolesGuard)
+  @Get('/list')
+  findAllUser(
+    @Query(
+      'page',
+      new ParseIntPipe({
+        errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE,
+        exceptionFactory: () => new BadRequestException('Invalid page'),
+      }),
+    )
+    page: number,
+    @Query(
+      'limit',
+      new ParseIntPipe({
+        errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE,
+        exceptionFactory: () => new BadRequestException('Invalid limit'),
+      }),
+    )
+    limit: number,
+    @Query('search')
+    search: string,
+  ) {
+    return this.userService.findAllUser(page, limit, search)
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.userService.findOne(id)
   }
 
   @ApiBearerAuth()

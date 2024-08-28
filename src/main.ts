@@ -7,10 +7,10 @@ import cookieParser from 'cookie-parser'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   app.use(cookieParser('token'))
-  app.enableCors({ origin: '*' })
+  app.enableCors({ origin: ['http://localhost:3000'], credentials: true })
 
   const config = new DocumentBuilder()
-    .addCookieAuth('token')
+    .addBearerAuth()
     .setTitle('Ig Scrape')
     .setDescription('India gyaan')
     .setVersion('1.0')

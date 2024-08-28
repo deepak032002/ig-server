@@ -5,7 +5,7 @@ import { JwtService } from '@nestjs/jwt'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { PrismaService } from 'src/prisma.service'
-import { EmailVerificationDto, LoginUserDto, VerifyEmailDto } from './dto/login-user.dto'
+import { ChangePasswordDto, EmailVerificationDto, LoginUserDto, VerifyEmailDto } from './dto/login-user.dto'
 import { RequestWithUser } from './interface'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Cache } from 'cache-manager'
@@ -187,5 +187,80 @@ export class UserService {
     })
 
     return responseResult(null, true, 'User deleted successfully.')
+  }
+
+  async changePassword(changePasswordDto: ChangePasswordDto) {
+    const user = await this.prism.user.findUnique({
+      where: { email: changePasswordDto.email },
+    })
+
+    if (!user) {
+      throw new NotFoundException('User not found')
+    }
+
+    const hash = await argon2.hash(changePasswordDto.password)
+
+    const storedOtp = await this.cacheManager.get<string>(changePasswordDto.email)
+
+    if (changePasswordDto.otp !== storedOtp) {
+      throw new BadRequestException('Invalid OTP')
+    }
+
+    const promises = [
+      this.cacheManager.del(changePasswordDto.email),
+      this.prism.user.update({
+        where: { id: user.id },
+        data: { password: hash },
+      }),
+    ]
+
+    await Promise.all(promises)
+
+    return responseResult(null, true, 'Password changed successfully.')
+  }
+
+  async findAllUser(page: number = 1, limit: number = 10, search: string = '') {
+    const users = await this.prism.user.findMany({
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+        createdAt: true,
+        updatedAt: true,
+        role: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      skip: (page - 1) * limit,
+      where: {
+        OR: [
+          { firstName: { contains: search, mode: 'insensitive' } },
+          { lastName: { contains: search, mode: 'insensitive' } },
+          { id: { contains: search, mode: 'insensitive' } },
+        ],
+        AND: [{ isDeleted: false }, { role: 'AUTHOR' }],
+      },
+      take: limit,
+    })
+
+    const total = await this.prism.user.count({
+      where: {
+        OR: [
+          { firstName: { contains: search, mode: 'insensitive' } },
+          { lastName: { contains: search, mode: 'insensitive' } },
+          { id: { contains: search, mode: 'insensitive' } },
+        ],
+        AND: [{ isDeleted: false }, { role: 'AUTHOR' }],
+      },
+    })
+
+    if (users.length === 0) {
+      return responseResult({ users, total }, true, 'Users not available')
+    }
+
+    return responseResult({ users, total }, true, 'Users found successfully')
   }
 }
