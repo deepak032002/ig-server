@@ -24,6 +24,9 @@
     "deploy": "yarn migrate:production && prisma generate && npx puppeteer browsers install chrome && yarn build",
     "prepare": "husky"
   },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "dependencies": {
     "@google/generative-ai": "^0.1.3",
     "@nestjs/cache-manager": "^2.1.1",
