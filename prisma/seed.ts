@@ -5,13 +5,13 @@ import * as argon2 from 'argon2'
 async function main() {
   const pass = await argon2.hash('Admin@1234')
   await prisma.user.upsert({
-    where: { email: 'alice@prisma.io' },
+    where: { email: 'admin@yopmail.com' },
     update: {},
     create: {
       email: 'admin@yopmail.com',
-      firstName: 'Alice',
+      firstName: 'IG',
       lastName: 'Admin',
-      role: 'ADMIN',
+      role: 'SUPER_ADMIN',
       password: pass,
       phone: '1234567890',
       isVerified: true,

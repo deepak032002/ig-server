@@ -241,7 +241,14 @@ export class UserService {
           { lastName: { contains: search, mode: 'insensitive' } },
           { id: { contains: search, mode: 'insensitive' } },
         ],
-        AND: [{ isDeleted: false }, { role: 'AUTHOR' }],
+        AND: [
+          { isDeleted: false },
+          {
+            role: {
+              in: ['ADMIN', 'AUTHOR'],
+            },
+          },
+        ],
       },
       take: limit,
     })
@@ -253,7 +260,14 @@ export class UserService {
           { lastName: { contains: search, mode: 'insensitive' } },
           { id: { contains: search, mode: 'insensitive' } },
         ],
-        AND: [{ isDeleted: false }, { role: 'AUTHOR' }],
+        AND: [
+          { isDeleted: false },
+          {
+            role: {
+              in: ['ADMIN', 'AUTHOR'],
+            },
+          },
+        ],
       },
     })
 

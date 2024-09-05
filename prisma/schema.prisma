@@ -18,7 +18,7 @@ model User {
   email      String   @unique
   phone      String
   password   String
-  role       Role     @default(AUTHOR)
+  role       Role     @default(USER)
   isVerified Boolean  @default(false)
   isDeleted  Boolean  @default(false)
   createdAt  DateTime @default(now())
@@ -125,6 +125,8 @@ model Logs {
 }
 
 enum Role {
-  AUTHOR
+  SUPER_ADMIN
   ADMIN
+  AUTHOR
+  USER
 }

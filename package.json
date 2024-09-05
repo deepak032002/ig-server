@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "migrate:dev": "prisma migrate dev",
     "prisma:db:push": "prisma db push",
+    "prisma:seed": "prisma db seed",
     "migrate:production": "prisma migrate deploy",
     "deploy": "yarn migrate:production && prisma generate && npx puppeteer browsers install chrome && yarn build",
     "prepare": "husky"
