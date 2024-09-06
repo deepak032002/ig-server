@@ -15,7 +15,7 @@ import {
   HttpStatus,
 } from '@nestjs/common'
 import { UserService } from './user.service'
-import { CreateUserDto } from './dto/create-user.dto'
+import { CreateAdminUserDto, CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { ChangePasswordDto, EmailVerificationDto, LoginUserDto, VerifyEmailDto } from './dto/login-user.dto'
@@ -74,7 +74,7 @@ export class UserController {
 
   @ApiQuery({ name: 'search', required: false })
   @ApiBearerAuth()
-  @Roles([Role.ADMIN])
+  @Roles([Role.SUPER_ADMIN, Role.ADMIN])
   @UseGuards(AuthGuard, RolesGuard)
   @Get('/list')
   findAllUser(
@@ -110,5 +110,13 @@ export class UserController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.userService.remove(id)
+  }
+
+  @ApiBearerAuth()
+  @Roles([Role.SUPER_ADMIN, Role.ADMIN])
+  @UseGuards(AuthGuard, RolesGuard)
+  @Post('/admin-user-create')
+  addUserByAdminController(@Body() createAdminUserDto: CreateAdminUserDto) {
+    return this.userService.addUserByAdmin(createAdminUserDto)
   }
 }

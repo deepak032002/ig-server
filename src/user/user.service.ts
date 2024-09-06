@@ -2,7 +2,7 @@ import { BadRequestException, Inject, Injectable, NotFoundException } from '@nes
 import * as argon2 from 'argon2'
 import { JwtService } from '@nestjs/jwt'
 
-import { CreateUserDto } from './dto/create-user.dto'
+import { CreateAdminUserDto, CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { PrismaService } from 'src/prisma.service'
 import { ChangePasswordDto, EmailVerificationDto, LoginUserDto, VerifyEmailDto } from './dto/login-user.dto'
@@ -13,6 +13,7 @@ import { ConfigService } from '@nestjs/config'
 import sendMail from 'src/utils/sendMail'
 import { htmlContent } from 'src/utils/emailTemplate'
 import { responseResult } from 'src/utils/response-result'
+import { Role } from '@prisma/client'
 
 @Injectable()
 export class UserService {
@@ -31,7 +32,7 @@ export class UserService {
       throw new BadRequestException('Email already exist')
     }
     const hash = await argon2.hash(createUserDto.password)
-    delete createUserDto.confirm_password
+    delete createUserDto.confirmPassword
     const user = await this.prism.user.create({
       data: { ...createUserDto, password: hash },
     })
@@ -276,5 +277,29 @@ export class UserService {
     }
 
     return responseResult({ users, total }, true, 'Users found successfully')
+  }
+
+  async addUserByAdmin(createAdminUserDto: CreateAdminUserDto) {
+    const isEmailExist = await this.prism.user.findFirst({
+      where: { email: createAdminUserDto.email },
+    })
+
+    if (isEmailExist) {
+      throw new BadRequestException('Email already exist')
+    }
+
+    const hash = await argon2.hash(createAdminUserDto.password)
+    delete createAdminUserDto.confirmPassword
+    const user = await this.prism.user.create({
+      data: {
+        ...createAdminUserDto,
+        password: hash,
+        role: createAdminUserDto.role as Role,
+        address: {
+          create: createAdminUserDto.address,
+        },
+      },
+    })
+    return responseResult(user, true, 'User created successfully.')
   }
 }
